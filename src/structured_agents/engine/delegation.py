@@ -50,11 +50,29 @@ def dispatch_agent(
 
     event_handler = _make_event_handler(agent_name)
 
+    # When running on the remote server itself, use the workspace as cwd so
+    # that claude operates inside the repo checkout.  When running locally
+    # (including Windows), cwd=None lets claude use its own default.
+    # Note: sagent_workspace is a *remote* Linux path -- it must not be used
+    # as a local cwd on Windows.
+    from pathlib import Path
+
+    agent_cwd: Path | None = None
+    if settings.sagent_is_remote:
+        agent_cwd = Path(settings.sagent_workspace)
+
+    # Build allowed tools list -- claude -p runs headless, so MCP tools must
+    # be pre-authorized via --allowedTools.  We use wildcard patterns like
+    # "mcp__atlassian-jira__*" to allow all tools from each MCP server the
+    # agent is configured to use.
+    allowed_tools = _build_allowed_tools(agent_name, registry=registry)
+
     result = backend.run(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         agent_name=agent_name,
-        cwd=settings.sagent_workspace if settings.sagent_is_remote else None,
+        allowed_tools=allowed_tools,
+        cwd=agent_cwd,
         on_event=event_handler,
     )
 
@@ -68,6 +86,25 @@ def dispatch_agent(
     result.artifacts.update(_extract_artifacts(result.output))
 
     return result
+
+
+def _build_allowed_tools(agent_name: str, *, registry: Registry) -> list[str]:
+    """Build the --allowedTools list for a headless claude -p invocation.
+
+    Includes wildcard MCP tool patterns (e.g. ``mcp__atlassian-jira__*``) for
+    every MCP server the agent is configured to use, so that headless mode
+    does not block on permission prompts.
+    """
+    mcps = registry.get_agent_mcps(agent_name, include_optional=True)
+    tools: list[str] = []
+    for mcp in mcps:
+        if mcp.available and mcp.type:
+            # Claude Code names MCP tools as mcp__<server-name>__<tool>
+            # The server name in .mcp.json matches mcp.type (e.g. "atlassian-jira")
+            tools.append(f"mcp__{mcp.type}__*")
+    if tools:
+        log.debug("Allowed MCP tools for %s: %s", agent_name, tools)
+    return tools
 
 
 def _make_event_handler(agent_name: str) -> Callable[[dict], None]:
