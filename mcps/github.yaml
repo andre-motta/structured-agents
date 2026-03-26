@@ -1,0 +1,41 @@
+name: github
+description: GitHub for pull request management (fromager, structured-agents)
+type: github
+
+connection:
+  auth:
+    type: personal_access_token
+    token: "${GITHUB_TOKEN}"
+
+capabilities:
+  - create_pr
+  - update_pr
+  - merge_pr
+  - list_pr_files
+  - add_pr_review
+  - get_workflow_status
+  - list_branches
+  - create_issue
+
+used_by_agents:
+  - git-ops
+
+used_by_skills:
+  - github-pr-create
+
+repos:
+  - python-wheel-build/fromager
+  - andre-motta/structured-agents
+
+environment_variables:
+  GITHUB_TOKEN: "GitHub personal access token with repo scope"
+
+setup_instructions: |
+  1. Install the GitHub MCP server:
+     npm install -g @modelcontextprotocol/server-github
+  
+  2. Set environment variable:
+     export GITHUB_TOKEN="your-personal-access-token"
+  
+  Alternative: use gh CLI (if available on the remote server):
+     gh auth login --with-token <<< "$GITHUB_TOKEN"

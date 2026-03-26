@@ -1,0 +1,61 @@
+name: jira-ops
+description: >
+  Manages Jira for AIPCC: read Epic/Story structure, create child issues,
+  transitions (To Do through Done), comments with MR links, labels, issue
+  links (blocked-by, relates-to), and fields such as size and assignee.
+  Produces structured ticket snapshots for the orchestrator and workspace
+  artifacts consumed by other agents.
+version: "0.1.0"
+
+capabilities:
+  - jira-ticket-read
+  - jira-ticket-create
+  - jira-ticket-update
+  - jira-transitions
+  - jira-comments-and-links
+  - jira-label-management
+
+sub_agents: []
+
+skills:
+  - jira-ticket-read
+  - jira-ticket-update
+  - jira-ticket-create
+
+mcps:
+  - jira
+
+inputs:
+  action:
+    type: string
+    required: true
+    description: >
+      Operation, e.g. read, create-story, transition, comment, set-labels,
+      add-link, update-fields, create-subtask
+  ticket_id:
+    type: string
+    required: false
+    description: Jira issue key (e.g. AIPCC-1234) for read/update/link targets
+  parent_epic_id:
+    type: string
+    required: false
+    description: Epic or parent issue key when creating child Stories
+  update_data:
+    type: object
+    required: false
+    description: >
+      Payload for updates: status/transition name, comment body, labels to add/remove,
+      issue link type and target, assignee, custom fields (size, etc.)
+  plan_context:
+    type: object
+    required: false
+    description: Execution plan excerpt, MR URLs, package name, automation batch id
+
+outputs:
+  ticket_snapshot: ticket.yaml
+  created_ticket_ids: created-tickets.yaml
+  transition_result: transition-result.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"

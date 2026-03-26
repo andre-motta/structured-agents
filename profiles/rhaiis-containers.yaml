@@ -1,0 +1,38 @@
+name: rhaiis-containers
+url: https://gitlab.com/redhat/rhel-ai/rhaiis/containers
+description: >-
+  RHAIIS container image definitions — parallel to the top-level containers repo,
+  focused on RHAIIS delivery images.
+language: containerfile
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/rhaiis/containers"
+ci_system: gitlab-ci
+key_files:
+  - Containerfile.*
+  - Makefile
+  - .gitlab-ci.yml
+  - .tekton/
+  - build-args*.conf
+conventions:
+  testing: >-
+    Images target Quay registry, UBI9 base; Tekton pipelines and Renovate manage
+    builds and dependency bumps alongside GitLab CI.
+relationships:
+  - repo: base-images
+    type: depends-on
+    description: UBI and product base layers flow from the shared base-images lineage.
+  - repo: rhaiis-pipeline
+    type: sibling
+    description: Pipeline repo defines wheels and pins that these images consume.
+  - repo: containers
+    type: sibling
+    description: Mirrors patterns and governance of the broader RHEL AI containers repo.
+workflows:
+  - name: add or update image variant
+    description: Change a Containerfile.*, build args, or Tekton path for a new or existing variant.
+    steps:
+      - Edit Containerfile.* and build-args*.conf following existing variant naming.
+      - Update Makefile or .tekton/ references if build entrypoints change.
+      - Push branch and verify GitLab CI and Tekton paths; confirm Quay tagging policy.
+      - Open MR and sync with rhaiis-pipeline if builder-image-version or pins move.

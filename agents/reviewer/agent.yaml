@@ -1,0 +1,67 @@
+name: reviewer
+description: >
+  Reviews code changes and GitLab merge requests for correctness, security,
+  and repo-specific conventions. Inspects local diffs from the coder or MRs
+  via GitLab MCP, verifies CI pipeline status, posts review comments when
+  appropriate, and emits a structured verdict (lgtm / needs-fixes).
+version: "0.1.0"
+
+capabilities:
+  - code-review
+  - merge-request-analysis
+  - ci-pipeline-validation
+  - gitlab-review-comments
+  - convention-compliance-check
+
+sub_agents: []
+
+skills:
+  - code-review
+  - gitlab-mr-review
+  - gitlab-pipeline-check
+  - ssh-remote-exec
+  - repo-discover
+
+mcps:
+  - gitlab
+
+inputs:
+  repo:
+    type: string
+    required: true
+    description: Repository name (matches path under remote workspace / GitLab project)
+  mr_url:
+    type: string
+    required: false
+    description: Full GitLab merge request URL when reviewing an open MR
+  changes_diff:
+    type: string
+    required: false
+    description: Path to diff artifact (e.g. artifacts/coder/changes.diff) when reviewing local coder output
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, acceptance criteria, linked issues, prior review rounds
+
+outputs:
+  review_result: review.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - builder
+  - fromager
+  - wheels-test
+  - package-onboarding
+  - containers
+  - infrastructure
+  - rhai-pipeline
+  - rhaiis-pipeline
+  - rhaiis-containers
+  - testcollections-pipeline
+  - selfservice
+  - rhel-ansible-setup
+  - architecture-decision-records
+  - base-images

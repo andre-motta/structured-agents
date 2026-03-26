@@ -1,0 +1,36 @@
+name: base-images
+url: https://gitlab.com/redhat/rhel-ai/base-images
+description: >-
+  Red Hat AI base images — CPU, CUDA, ROCm, Spyre, TPU, Neuron with Python 3.12.
+language: containerfile
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/base-images/app"
+ci_system: gitlab-ci
+key_files:
+  - "Containerfile.*"
+  - README.md
+conventions:
+  testing: >-
+    UBI/RHEL base; DNF repositories and accelerator-specific layers per variant;
+    local checkout often rooted at base-images/app for application-facing Dockerfiles.
+relationships:
+  - repo: containers
+    type: consumed-by
+    description: RHAIIS container definitions build from or pin these base images.
+  - repo: rhaiis-containers
+    type: consumed-by
+    description: RHAIIS image stacks consume tagged base layers from this project.
+workflows:
+  - name: bump base image version
+    description: Move to newer UBI/RHEL or Python layer across variants.
+    steps:
+      - Update FROM lines and README.md version table.
+      - Rebuild all Containerfile.* variants via CI.
+      - Notify containers and rhaiis-containers maintainers for downstream rebases.
+  - name: add accelerator variant
+    description: Introduce a new accelerator stack (repos, drivers, runtime).
+    steps:
+      - Add Containerfile.* following an existing variant template.
+      - Configure DNF repos and env for the accelerator family.
+      - Validate build in GitLab CI and document usage in README.md.

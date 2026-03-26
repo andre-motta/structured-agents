@@ -1,0 +1,52 @@
+name: researcher
+description: >
+  Investigates technical topics by reading upstream documentation, analyzing
+  GitLab-hosted codebases (including fromager/builder contexts), and synthesizing
+  findings into Architecture Decision Records, spike memos, or investigation
+  reports. Uses Jira/GitLab for traceability and writes artifacts into the shared
+  workspace on the remote server.
+version: "0.1.0"
+
+capabilities:
+  - technical-research
+  - adr-authoring
+  - spike-and-investigation-reports
+  - upstream-and-pypi-reconnaissance
+  - codebase-analysis-via-ssh
+
+sub_agents: []
+
+skills:
+  - adr-write
+  - repo-discover
+  - ssh-remote-exec
+
+mcps:
+  - jira
+  - gitlab
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: >
+      Task slice from execution plan: id, action, depends_on, inputs. Must
+      include research topic or question, scope (in/out), and output_format
+      one of adr, report, spike; optional jira_ref and target repo paths.
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, linked MRs, workspace artifact paths, prior agent outputs
+
+outputs:
+  research_document: research-output.md
+  research_metadata: research-meta.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - architecture-decision-records
+  - fromager
+  - builder

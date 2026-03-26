@@ -1,0 +1,64 @@
+name: coder
+description: >
+  Implements execution-plan tasks by checking out branches on the remote server,
+  reading repo profiles for conventions, writing or modifying code, running
+  local validation, and emitting diff and validation artifacts. Can delegate
+  focused work to sub-agents per repo or language when the plan calls for it.
+version: "0.1.0"
+
+capabilities:
+  - code-implementation
+  - branch-checkout-push
+  - local-validation
+  - diff-artifact-production
+  - convention-adherence
+  - multi-repo-coordination
+
+# Empty: orchestrator/planner may name ad-hoc sub-agents at runtime (per-repo/language).
+sub_agents: []
+
+skills:
+  - ssh-remote-exec
+  - code-write
+  - repo-discover
+
+mcps:
+  - gitlab
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: Task slice from execution plan (id, action, depends_on, inputs)
+  repo:
+    type: string
+    required: true
+    description: Target repository name under the remote workspace
+  plan_context:
+    type: object
+    required: false
+    description: Relevant plan summary, ticket id, branch naming hints, related task outputs
+
+outputs:
+  changes_diff: changes.diff
+  validation_result: validation.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - builder
+  - fromager
+  - wheels-test
+  - package-onboarding
+  - containers
+  - infrastructure
+  - rhai-pipeline
+  - rhaiis-pipeline
+  - rhaiis-containers
+  - testcollections-pipeline
+  - selfservice
+  - rhel-ansible-setup
+  - architecture-decision-records
+  - base-images

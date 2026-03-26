@@ -1,0 +1,50 @@
+name: jira
+description: Atlassian Jira for ticket lifecycle management
+type: atlassian-jira
+
+connection:
+  # MCP server for Jira -- configure with your Atlassian instance
+  # See: https://github.com/sooperset/mcp-atlassian
+  server_url: "${JIRA_SERVER_URL}"
+  auth:
+    type: api_token
+    username: "${JIRA_USERNAME}"
+    token: "${JIRA_API_TOKEN}"
+
+capabilities:
+  - read_ticket
+  - update_ticket
+  - create_ticket
+  - transition_ticket
+  - add_comment
+  - manage_labels
+  - create_issue_link
+  - search_tickets
+
+used_by_agents:
+  - orchestrator
+  - planner
+  - packager
+  - researcher
+  - jira-ops
+
+used_by_skills:
+  - jira-ticket-read
+  - jira-ticket-update
+  - jira-ticket-create
+
+environment_variables:
+  JIRA_SERVER_URL: "Jira instance URL (e.g. https://issues.redhat.com)"
+  JIRA_USERNAME: "Jira username / email"
+  JIRA_API_TOKEN: "Jira API token or PAT"
+
+setup_instructions: |
+  1. Install the Atlassian MCP server:
+     npm install -g @sooperset/mcp-atlassian
+  
+  2. Set environment variables:
+     export JIRA_SERVER_URL="https://issues.redhat.com"
+     export JIRA_USERNAME="your-email@redhat.com"
+     export JIRA_API_TOKEN="your-api-token"
+  
+  3. Add to your Cursor MCP configuration or run standalone

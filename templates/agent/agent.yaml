@@ -1,0 +1,35 @@
+name: agent-name
+description: >
+  Brief description of what this agent does and when the orchestrator should invoke it.
+version: "0.1.0"
+
+capabilities:
+  - capability-one
+  - capability-two
+
+sub_agents: []
+
+skills:
+  - ssh-remote-exec
+  - repo-discover
+
+mcps: []
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: Task from the execution plan
+  repo:
+    type: string
+    required: false
+    description: Target repository name
+
+outputs:
+  result: result.yaml
+
+remote:
+  host: ${SAGENT_SSH_HOST}
+  workspace: ${SAGENT_WORKSPACE}
+
+profiles: []

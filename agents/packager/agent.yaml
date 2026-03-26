@@ -1,0 +1,69 @@
+name: packager
+description: >
+  AIPCC domain specialist for package onboarding, dependency and constraint
+  updates across builder, rhai/pipeline, and wheels-test, fromager test builds,
+  builder overrides/settings, and Pulp-backed index collections. Takes over
+  automation-created MRs, fixes CI/build failures, and reports outcomes.
+version: "0.1.0"
+
+capabilities:
+  - package-onboarding-takeover
+  - dependency-constraint-editing
+  - fromager-build-debugging
+  - builder-override-configuration
+  - pipeline-collection-management
+  - mr-review-and-fix
+
+sub_agents: []
+
+skills:
+  - package-onboard
+  - dependency-update
+  - fromager-build
+  - ssh-remote-exec
+  - repo-discover
+  - gitlab-mr-takeover
+
+mcps:
+  - gitlab
+  - jira
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: Task slice from execution plan (id, action, depends_on, inputs)
+  repo:
+    type: string
+    required: true
+    description: Target repository (builder, rhai-pipeline, wheels-test, etc.)
+  package_name:
+    type: string
+    required: false
+    description: Distribution or project name when the task is package-specific
+  mr_url:
+    type: string
+    required: false
+    description: GitLab merge request URL for onboarding or fix workflows
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, merge order, linked MRs, variant targets, prior build logs
+
+outputs:
+  fix_report: fix-report.yaml
+  build_report: build-report.yaml
+  changes_diff: changes.diff
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - builder
+  - fromager
+  - rhai-pipeline
+  - rhaiis-pipeline
+  - testcollections-pipeline
+  - wheels-test
+  - package-onboarding

@@ -1,0 +1,43 @@
+name: infrastructure
+url: https://gitlab.com/redhat/rhel-ai/wheels/infrastructure
+description: >-
+  Wheel infrastructure automation — mirrors, product pipelines, builder cache repos.
+language: python
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/infrastructure"
+ci_system: gitlab-ci
+key_files:
+  - pyproject.toml
+  - data/
+  - src/
+conventions:
+  testing: >-
+    Console scripts (e.g. make-mirrors, make-product-pipelines); YAML data definitions
+    under data/; Python implementation under src/.
+relationships:
+  - repo: rhai-pipeline
+    type: consumed-by
+    description: RHAI pipeline consumes generated mirror and product pipeline config.
+  - repo: testcollections-pipeline
+    type: consumed-by
+    description: Test collections automation uses mirrored or cached artifacts.
+workflows:
+  - name: add new mirror
+    description: Define a new wheel or source mirror for the ecosystem.
+    steps:
+      - Add or extend YAML under data/ following existing mirror schema.
+      - Run make-mirrors (or equivalent console script) to validate generation.
+      - Apply MR and verify GitLab CI applies changes safely.
+  - name: define product pipeline
+    description: Model a product-specific pipeline over shared wheel infrastructure.
+    steps:
+      - Add pipeline data under data/ and wire src/ generators if needed.
+      - Run make-product-pipelines and diff expected outputs.
+      - Coordinate with rhai-pipeline owners before merge.
+  - name: update builder cache
+    description: Adjust cache repo layout or sync rules for builder outputs.
+    steps:
+      - Locate cache definitions in data/ or src/.
+      - Regenerate config and test in a non-prod project if available.
+      - Document rollout for builder and downstream pipelines.

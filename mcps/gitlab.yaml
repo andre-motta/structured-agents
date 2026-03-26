@@ -1,0 +1,53 @@
+name: gitlab
+description: GitLab for merge request and pipeline management
+type: gitlab
+
+connection:
+  server_url: "${GITLAB_URL}"
+  auth:
+    type: personal_access_token
+    token: "${GITLAB_TOKEN}"
+
+capabilities:
+  - create_mr
+  - update_mr
+  - merge_mr
+  - list_mr_changes
+  - add_mr_note
+  - get_pipeline_status
+  - get_job_logs
+  - list_branches
+  - create_branch
+  - list_projects
+
+used_by_agents:
+  - orchestrator
+  - planner
+  - coder
+  - reviewer
+  - tester
+  - packager
+  - git-ops
+
+used_by_skills:
+  - gitlab-mr-create
+  - gitlab-mr-takeover
+  - gitlab-mr-review
+  - gitlab-pipeline-check
+
+environment_variables:
+  GITLAB_URL: "GitLab instance URL (e.g. https://gitlab.com)"
+  GITLAB_TOKEN: "GitLab personal access token with api scope"
+
+setup_instructions: |
+  1. Install the GitLab MCP server:
+     npm install -g @modelcontextprotocol/server-gitlab
+  
+  2. Set environment variables:
+     export GITLAB_URL="https://gitlab.com"
+     export GITLAB_TOKEN="your-personal-access-token"
+  
+  3. Ensure the token has 'api' scope for full MR and pipeline access
+  
+  Alternative: use glab CLI (if available on the remote server):
+     glab auth login --hostname gitlab.com --token "$GITLAB_TOKEN"

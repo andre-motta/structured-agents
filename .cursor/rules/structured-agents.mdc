@@ -1,0 +1,44 @@
+---
+description: Conventions for working on the structured-agents repository
+alwaysApply: true
+---
+
+# Structured Agents Project Conventions
+
+## Repository Structure
+
+- `agents/<name>/` -- agent definitions with `agent.yaml` (metadata) + `AGENT.md` (instructions)
+- `skills/<name>/` -- reusable capabilities with `SKILL.md` (frontmatter + instructions)
+- `profiles/<name>.yaml` -- known repository profiles
+- `mcps/<name>.yaml` -- MCP server configurations
+- `remote/` -- SSH remote execution config
+- `templates/` -- templates for creating new agents, skills, profiles
+- `src/structured_agents/` -- Python runtime (CLI + MCP server)
+
+## Creating New Agents
+
+1. Create directory under `agents/<agent-name>/`
+2. Add `agent.yaml` following `agents/_schema.yaml`
+3. Add `AGENT.md` with system prompt and instructions
+4. Register in parent agent's `sub_agents` list if it should be delegated to
+
+## Creating New Skills
+
+1. Create directory under `skills/<skill-name>/`
+2. Add `SKILL.md` with YAML frontmatter (`name`, `description`, `tools`, `mcps`)
+3. Keep under 150 lines; use progressive disclosure for complex skills
+4. Register in agent `agent.yaml` `skills` lists where appropriate
+
+## Key Patterns
+
+- All remote execution goes through SSH to the remote server (see `remote/server.yaml`)
+- Agent names use kebab-case matching their directory name
+- Skills are referenced by name (directory name) in agent.yaml files
+- Repo profiles provide built-in knowledge; `repo-discover` skill supplements at runtime
+- Context flows through filesystem workspace + structured YAML/JSON artifacts
+
+## Python Code Style
+
+- Python 3.12+, Ruff for linting, mypy strict mode
+- Click for CLI, Pydantic for data models, PyYAML for config loading
+- Hatchling for packaging

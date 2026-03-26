@@ -1,0 +1,49 @@
+name: package-onboarding
+url: https://gitlab.com/redhat/rhel-ai/core/package-onboarding
+description: >-
+  Automated onboarding of Python packages into the AIPCC pipeline.
+language: python
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/package-onboarding"
+ci_system: gitlab-ci
+key_files:
+  - onboarding-cli.py
+  - investigate-cli.py
+  - jira_cli.py
+  - scripts/
+  - docs/
+conventions:
+  branch_naming: >-
+    Align with Jira ticket keys and onboarding MR patterns used in this repo.
+  testing: >-
+    Shell scripts live under scripts/; Jira integration via jira_cli.py; documentation
+    built with MkDocs under docs/.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Onboarding feeds overrides and collection changes into builder.
+  - repo: rhai-pipeline
+    type: depends-on
+    description: Coordinates with RHAI product pipeline stages and promotion.
+  - repo: wheels-test
+    type: depends-on
+    description: Uses or schedules probe validation for onboarded packages.
+workflows:
+  - name: trigger onboarding pipeline
+    description: Start automated flow to add or update a package in AIPCC.
+    steps:
+      - Gather package name, version policy, and Jira context.
+      - Run onboarding-cli.py per docs/ and scripts/ conventions.
+      - Follow GitLab pipeline output and fix validation failures.
+  - name: investigate package
+    description: Deep-dive build, dependency, or policy blockers before onboarding.
+    steps:
+      - Use investigate-cli.py and supporting scripts under scripts/.
+      - Capture findings in Jira via jira_cli.py where applicable.
+      - Document outcomes in docs/ or ticket comments.
+  - name: review automation MRs
+    description: Validate bot-opened MRs across builder and related repos.
+    steps:
+      - Diff overrides, settings, and pipeline touchpoints for correctness.
+      - Run or wait for CI; request changes or merge per team policy.

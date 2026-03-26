@@ -1,0 +1,31 @@
+name: repo-name
+url: "https://gitlab.com/org/repo"
+description: Brief description of the repository
+language: python
+platform: gitlab
+default_branch: main
+local_path: ${SAGENT_WORKSPACE}/repo-name
+ci_system: gitlab-ci
+
+key_files:
+  - README.md
+  - pyproject.toml
+
+conventions:
+  commit_format: "type: description (e.g. fix: correct widget alignment)"
+  branch_naming: "type/short-description (e.g. feature/add-widget)"
+  review_requirements: "1 approval required"
+  testing: "tox (default), pytest for unit tests"
+
+relationships:
+  - repo: related-repo
+    type: depends-on
+    description: "How this repo relates to the other"
+
+workflows:
+  - name: common-workflow
+    description: "Description of a workflow agents perform in this repo"
+    steps:
+      - "Step 1"
+      - "Step 2"
+      - "Step 3"

@@ -1,0 +1,47 @@
+name: rhel-ansible-setup
+url: https://gitlab.com/redhat/rhel-ai/rhel-ansible-setup
+description: >-
+  Walkerpass system provisioning — RHEL hosts, repositories, certificates, users,
+  SSH hardening, and monitoring via Ansible.
+language: ansible
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/rhel-ansible-setup"
+ci_system: gitlab-ci
+key_files:
+  - playbook.yml
+  - inventory.ini
+  - vars/users.yml
+  - templates/
+conventions:
+  testing: >-
+    Tag-based task groups (repos, packages, users, ssh, monitoring, updates); Slack
+    integration for monitoring alerts; validate playbooks with check mode or staging
+    inventory before production runs.
+relationships: []
+workflows:
+  - name: add user
+    description: Provision a new system user with keys and sudo or group membership.
+    steps:
+      - Edit vars/users.yml (or role vars) following existing user record structure.
+      - Update templates/ if shell, ssh, or profile fragments are required.
+      - Run playbook with appropriate --tags users (or full) against staging inventory first.
+      - Open MR and note any Slack or monitoring notifier updates.
+  - name: update repos
+    description: Change subscribed repos, mirrors, or entitlement configuration on hosts.
+    steps:
+      - Adjust playbook tasks or vars under the repos tag pattern.
+      - Test on a non-production host or check mode; confirm GPG and base URLs.
+      - Document rollback (previous repo file or subscription state) in the MR.
+  - name: modify monitoring
+    description: Change checks, exporters, or Slack routing for monitored hosts.
+    steps:
+      - Locate monitoring-tagged tasks and templates; align with Slack webhook secrets in CI or vault.
+      - Apply to staging; verify alerts fire and resolve as expected.
+      - Open MR with runbook notes for on-call.
+  - name: add certificate
+    description: Install or rotate TLS or client certificates on provisioned hosts.
+    steps:
+      - Add or update cert material under templates/ or files/ and wire playbook tasks.
+      - Use inventory groups to limit blast radius; test service restarts if required.
+      - Document expiry and renewal procedure in the MR or internal wiki link.

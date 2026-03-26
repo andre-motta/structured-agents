@@ -1,0 +1,34 @@
+name: architecture-decision-records
+url: https://gitlab.com/redhat/rhel-ai/architecture-decision-records
+description: >-
+  Architecture Decision Records for the AI Platform Core Components team — MkDocs
+  Material site publishing ADRs and supporting docs.
+language: mixed
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/architecture-decision-records"
+ci_system: gitlab-ci
+key_files:
+  - mkdocs.yml
+  - docs/adrs/
+  - pyproject.toml
+  - tox.ini
+conventions:
+  testing: >-
+    Markdown ADRs use numbered filenames under docs/adrs/; MkDocs Material builds
+    the site; markdownlint and Ruff run via tox and CI for style and Python tooling.
+relationships: []
+workflows:
+  - name: write new ADR
+    description: Add a new decision record with status, context, and consequences.
+    steps:
+      - Choose the next ADR number and create docs/adrs/NNNN-short-title.md from the template pattern.
+      - Fill context, decision, status (e.g. proposed/accepted), and consequences.
+      - Run tox (markdownlint, mkdocs build, ruff) locally; fix violations.
+      - Open MR for team review before merging and publishing via CI.
+  - name: update existing ADR
+    description: Amend superseded or in-progress ADRs while preserving history.
+    steps:
+      - Edit the numbered file; add superseded-by or amendment notes if policy requires.
+      - Rebuild with mkdocs locally or via tox to verify navigation and links.
+      - Open MR explaining the change to decision status or technical detail.

@@ -1,0 +1,82 @@
+# Repository Profile Schema
+# Each profile is a YAML file describing a known repository
+
+type: object
+required: [name, url, description, language]
+properties:
+  name:
+    type: string
+    description: Short identifier for this repo (matches filename without .yaml)
+
+  url:
+    type: string
+    description: Git clone URL (GitLab or GitHub)
+
+  description:
+    type: string
+    description: What this repository does
+
+  language:
+    type: string
+    enum: [python, shell, yaml, ansible, containerfile, mixed]
+    description: Primary language/technology
+
+  platform:
+    type: string
+    enum: [gitlab, github]
+    description: Where the repo is hosted
+
+  default_branch:
+    type: string
+    default: main
+    description: Default branch name
+
+  local_path:
+    type: string
+    description: Path on the remote server filesystem (e.g. ${SAGENT_WORKSPACE}/builder)
+
+  ci_system:
+    type: string
+    enum: [gitlab-ci, github-actions, tekton, none]
+
+  key_files:
+    type: array
+    items:
+      type: string
+    description: Important files to read for context (README, configs, etc.)
+
+  conventions:
+    type: object
+    properties:
+      commit_format:
+        type: string
+        description: Commit message format or convention
+      branch_naming:
+        type: string
+        description: Branch naming pattern
+      review_requirements:
+        type: string
+        description: Review/approval requirements for MRs
+      testing:
+        type: string
+        description: How tests are run (tox, pytest, make test, etc.)
+
+  relationships:
+    type: array
+    items:
+      type: object
+      properties:
+        repo: { type: string }
+        type: { type: string, enum: [depends-on, consumed-by, sibling, upstream] }
+        description: { type: string }
+    description: How this repo relates to others in the ecosystem
+
+  workflows:
+    type: array
+    items:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        steps: { type: array, items: { type: string } }
+    description: Common workflows an agent would perform in this repo

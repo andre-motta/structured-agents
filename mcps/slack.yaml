@@ -1,0 +1,44 @@
+name: slack
+description: >
+  Slack for reading notifications and posting status updates.
+  OPTIONAL: This MCP is only active when SLACK_BOT_TOKEN is set.
+  Agents must check for the env var before attempting to use Slack.
+type: slack
+optional: true
+required_env: SLACK_BOT_TOKEN
+
+connection:
+  auth:
+    type: bot_token
+    token: "${SLACK_BOT_TOKEN}"
+
+capabilities:
+  - read_channel_messages
+  - search_messages
+  - post_message
+  - list_channels
+
+used_by_agents:
+  - orchestrator
+
+used_by_skills:
+  - slack-channel-read
+
+channels:
+  package_onboarding: "Channel where package onboarding notifications are posted"
+
+environment_variables:
+  SLACK_BOT_TOKEN: "Slack Bot OAuth token with channels:history, channels:read, chat:write scopes"
+  SLACK_WEBHOOK_URL: "Optional: Slack webhook URL for simple notifications"
+
+setup_instructions: |
+  1. Create a Slack App at https://api.slack.com/apps
+  
+  2. Add OAuth scopes: channels:history, channels:read, chat:write, search:read
+  
+  3. Install to workspace and copy the Bot User OAuth Token
+  
+  4. Set environment variable:
+     export SLACK_BOT_TOKEN="xoxb-your-bot-token"
+  
+  5. Install the Slack MCP server or use the Slack API directly
