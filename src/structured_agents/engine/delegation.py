@@ -85,6 +85,12 @@ def dispatch_agent(
 
     result.artifacts.update(_extract_artifacts(result.output))
 
+    # Persist prompts and raw output as artifacts so the workspace directory
+    # contains a full audit trail of every agent invocation.
+    result.artifacts["system_prompt.md"] = system_prompt
+    result.artifacts["user_prompt.md"] = user_prompt
+    result.artifacts["output.md"] = result.output
+
     return result
 
 
