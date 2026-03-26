@@ -113,4 +113,3 @@ profiles:
   - rhel-ansible-setup
   - architecture-decision-records
   - base-images
-  - structured-agents
