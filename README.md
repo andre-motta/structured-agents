@@ -15,6 +15,12 @@ Both platforms use the same agent definitions, skills, and profiles. The `genera
 
 Agents can run **locally** on the development server (when using Cursor SSH Remote or Claude Code directly) or **remotely** over SSH from any machine. The system auto-detects which mode to use.
 
+## Prerequisites
+
+- **Python 3.11+**
+- **Node.js 18+** -- required by MCP servers (Jira, GitLab, GitHub, Slack). On Windows, if you use `nvm`, run `nvm install 22 && nvm use 22` from an admin terminal.
+- **Claude Code** or **Cursor** -- at least one must be installed. Claude Code must be available as `claude` on your `PATH`.
+
 ## Setup
 
 1. Copy the environment template and fill in your values:
@@ -27,27 +33,45 @@ Agents can run **locally** on the development server (when using Cursor SSH Remo
 
    | Variable | Purpose |
    |----------|---------|
-   | `SAGENT_WORKSPACE` | Base directory where repositories live |
+   | `SAGENT_WORKSPACE` | Base directory where repositories live on the remote server |
    | `SAGENT_SSH_HOST` | Hostname of the remote server (for SSH mode) |
    | `SAGENT_SSH_USER` | SSH username |
-   | `SAGENT_SSH_KEY` | Path to SSH private key (optional, defaults to `~/.ssh/id_ed25519`) |
-   | `SAGENT_IS_REMOTE` | Set to `true` if running directly on the remote server (skips SSH) |
+   | `SAGENT_SSH_KEY` | Path to SSH private key (must match your `~/.ssh/config`) |
+   | `SAGENT_IS_REMOTE` | Set to `true` **only** if running directly on the remote server (e.g. via Cursor SSH Remote). On Windows this is always auto-detected as `false`. |
 
    See `.env.example` for additional settings (Jira, GitLab, GitHub, Slack).
 
 3. Generate MCP configuration:
 
    ```bash
-   # Cursor only (writes to .cursor/mcp.json)
-   make mcp-config WORKSPACE=/path/to/workspace
+   # Linux / macOS (via Makefile)
+   make mcp-config WORKSPACE=/path/to/workspace              # Cursor only
+   make mcp-config WORKSPACE=/path/to/workspace CLAUDE_CODE=1 # Cursor + Claude Code
 
-   # Cursor + Claude Code (also writes .mcp.json)
-   make mcp-config WORKSPACE=/path/to/workspace CLAUDE_CODE=1
+   # Any platform (via Python directly)
+   python scripts/generate-mcp-config.py                     # Cursor only
+   python scripts/generate-mcp-config.py --claude-code       # Cursor + Claude Code
    ```
 
-4. Activate:
+4. **Windows only** -- the generated `.mcp.json` uses `npx` as the command, but
+   Windows requires a wrapper. Open `.mcp.json` and change each server's
+   `"command"` from `"npx"` to `"npx.cmd"`:
+
+   ```json
+   {
+     "mcpServers": {
+       "atlassian-jira": {
+         "command": "npx.cmd",
+         "args": ["-y", "@aashari/mcp-server-atlassian-jira"],
+         "env": { ... }
+       }
+     }
+   }
+   ```
+
+5. Activate:
    - **Cursor**: Reload the window (`Ctrl+Shift+P` -> "Reload Window")
-   - **Claude Code**: Starts automatically on next session
+   - **Claude Code**: Run `/mcp` to reload, or restart the session
 
 ## Architecture
 
@@ -86,8 +110,14 @@ Each agent is defined declaratively via `agent.yaml` (metadata) + `AGENT.md` (in
 Install in development mode:
 
 ```bash
+# Linux / macOS
 python3 -m venv .venv && source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,mcp]"
+
+# Windows
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e ".[dev,mcp]"
 ```
 
 ### Run against a Jira ticket

@@ -25,6 +25,8 @@ workspace/
 .cursor/mcp.json
 .mcp.json
 
+.claude/
+
 .DS_Store
 *.swp
 *.swo

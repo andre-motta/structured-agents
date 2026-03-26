@@ -3,8 +3,9 @@
 from __future__ import annotations
 
 import os
+import platform
 import socket
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 
 from dotenv import load_dotenv
 from pydantic import Field, model_validator
@@ -26,10 +27,12 @@ class Settings(BaseSettings):
     repo_root: Path = Field(default_factory=_find_repo_root)
 
     # Remote server / SSH
-    sagent_workspace: Path = Field(alias="SAGENT_WORKSPACE")
+    # Stored as str because this is a *remote* Linux path -- converting it to
+    # a local Path on Windows would mangle forward slashes into backslashes.
+    sagent_workspace: str = Field(alias="SAGENT_WORKSPACE")
     sagent_ssh_host: str = Field(default="", alias="SAGENT_SSH_HOST")
     sagent_ssh_user: str = Field(default="", alias="SAGENT_SSH_USER")
-    sagent_ssh_key: Path = Field(default=Path("~/.ssh/id_ed25519"), alias="SAGENT_SSH_KEY")
+    sagent_ssh_key: str = Field(default="~/.ssh/id_ed25519", alias="SAGENT_SSH_KEY")
     sagent_ssh_port: int = Field(default=22, alias="SAGENT_SSH_PORT")
     sagent_is_remote: bool = Field(default=False, alias="SAGENT_IS_REMOTE")
 
@@ -44,7 +47,16 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def _auto_detect_remote(self) -> "Settings":
-        """If SAGENT_IS_REMOTE was not explicitly set, compare hostname to ssh_host."""
+        """Auto-detect whether we are running on the remote server.
+
+        On Windows we are never "on" a Linux remote, regardless of what the
+        env var says, so we force False.  Otherwise, if SAGENT_IS_REMOTE was
+        not explicitly set, we compare the local hostname to ssh_host.
+        """
+        if platform.system() == "Windows":
+            self.sagent_is_remote = False
+            return self
+
         explicit = os.environ.get("SAGENT_IS_REMOTE", "").lower()
         if explicit not in ("true", "1", "yes"):
             hostname = socket.gethostname()
@@ -52,6 +64,16 @@ class Settings(BaseSettings):
                 self.sagent_ssh_host and hostname.startswith(self.sagent_ssh_host.split(".")[0])
             )
         return self
+
+    @property
+    def sagent_workspace_posix(self) -> PurePosixPath:
+        """Return the remote workspace as a PurePosixPath (safe on any OS)."""
+        return PurePosixPath(self.sagent_workspace)
+
+    @property
+    def sagent_ssh_key_path(self) -> Path:
+        """Return the SSH key as a local Path with ~ expanded."""
+        return Path(self.sagent_ssh_key).expanduser()
 
     @property
     def has_jira(self) -> bool:

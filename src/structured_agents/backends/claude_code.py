@@ -165,7 +165,11 @@ def _try_parse_json(line: str) -> dict | None:
 
 def _extract_tokens(event: dict) -> tuple[int, int]:
     """Extract (input_tokens, output_tokens) from a stream-json event."""
-    usage = event.get("usage") or event.get("result", {}).get("usage") or {}
+    result = event.get("result")
+    result_usage = result.get("usage") if isinstance(result, dict) else None
+    usage = event.get("usage") or result_usage or {}
+    if not isinstance(usage, dict):
+        return 0, 0
     return usage.get("input_tokens", 0), usage.get("output_tokens", 0)
 
 
@@ -182,6 +186,9 @@ def _extract_text(event: dict) -> str:
         return "\n".join(parts)
 
     if etype == "result":
-        return event.get("result", {}).get("text", "")
+        result = event.get("result", {})
+        if isinstance(result, dict):
+            return result.get("text", "")
+        return str(result) if result else ""
 
     return ""
