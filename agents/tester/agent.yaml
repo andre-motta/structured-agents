@@ -1,0 +1,60 @@
+name: tester
+description: >
+  Writes probe and unit tests for Python packages in wheels-test (and related
+  repos), runs suites on the remote server via tox/pytest over SSH, interprets
+  markers and hardware-adaptive skips, validates results, and emits structured
+  test reports. Uses GitLab MCP to correlate runs with MR pipeline status.
+version: "0.1.0"
+
+capabilities:
+  - probe-test-authoring
+  - pytest-marker-usage
+  - remote-test-execution
+  - test-result-analysis
+  - hardware-adaptive-skipping
+  - structured-test-reporting
+
+sub_agents: []
+
+skills:
+  - test-write
+  - test-run
+  - ssh-remote-exec
+  - repo-discover
+
+mcps:
+  - gitlab
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: Task slice from execution plan (id, action, depends_on, inputs)
+  package_name:
+    type: string
+    required: true
+    description: Python distribution or import name under test
+  test_type:
+    type: string
+    required: false
+    description: Kind of work (probe, unit, import-smoke, model-load, etc.)
+  repo:
+    type: string
+    required: true
+    description: Repository name under remote workspace (usually wheels-test)
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, target markers, architecture/variant hints, related MR URLs
+
+outputs:
+  test_report: test-report.yaml
+  tests_diff: tests.diff
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - wheels-test
+  - builder

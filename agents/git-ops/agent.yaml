@@ -1,0 +1,116 @@
+name: git-ops
+description: >
+  Handles Git operations and merge requests on the remote server (branch, commit,
+  push, rebase, conflict resolution) plus GitLab MR and GitHub PR lifecycle:
+  create, draft/undraft, labels, descriptions, reviewers, dependencies,
+  merge after CI and approvals. Emits structured URLs and status artifacts
+  for the orchestrator and jira-ops.
+version: "0.1.0"
+
+capabilities:
+  - git-branch-commit-push
+  - gitlab-mr-lifecycle
+  - github-pr-lifecycle
+  - mr-merge-and-rebase
+  - draft-mr-management
+  - mr-dependencies
+  - ci-and-approval-gates
+
+sub_agents: []
+
+skills:
+  - gitlab-mr-create
+  - gitlab-mr-takeover
+  - github-pr-create
+  - ssh-remote-exec
+
+mcps:
+  - gitlab
+  - github
+
+inputs:
+  action:
+    type: string
+    required: true
+    description: >
+      Operation to perform, e.g. create-branch, checkout, commit, push,
+      create-mr, create-pr, update-mr, merge-mr, merge-pr, rebase,
+      resolve-conflicts, undraft-mr, set-mr-dependencies, add-labels
+  repo:
+    type: string
+    required: false
+    description: Repository name under the remote workspace (GitLab redhat/rhel-ai paths or GitHub clones)
+  branch_name:
+    type: string
+    required: false
+    description: Source or target branch name per repo profile conventions
+  base_branch:
+    type: string
+    required: false
+    description: Base branch for new branches or rebase target (default from repo profile or main)
+  mr_url:
+    type: string
+    required: false
+    description: GitLab merge request URL when action targets an existing MR
+  pr_url:
+    type: string
+    required: false
+    description: GitHub pull request URL when action targets an existing PR
+  title:
+    type: string
+    required: false
+    description: MR/PR title when creating or updating
+  description:
+    type: string
+    required: false
+    description: MR/PR description body (Markdown); include ticket links and summary
+  labels:
+    type: array
+    required: false
+    description: Label names to set or add on MR/PR
+  reviewers:
+    type: array
+    required: false
+    description: Usernames or group paths for requested review (GitLab/GitHub as applicable)
+  blocking_mr_urls:
+    type: array
+    required: false
+    description: MR URLs that must merge first (GitLab MR dependency / related semantics)
+  commit_message:
+    type: string
+    required: false
+    description: Full commit message; must follow repo profile conventions
+  task:
+    type: object
+    required: false
+    description: Task slice from execution plan when invoked from orchestrator
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, related MRs, merge order, profile hints, prior conflict notes
+
+outputs:
+  mr_or_pr_metadata: mr.yaml
+  merge_status: merge-status.yaml
+  conflict_report: conflict-report.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - builder
+  - fromager
+  - wheels-test
+  - package-onboarding
+  - containers
+  - infrastructure
+  - rhai-pipeline
+  - rhaiis-pipeline
+  - rhaiis-containers
+  - testcollections-pipeline
+  - selfservice
+  - rhel-ansible-setup
+  - architecture-decision-records
+  - base-images
+  - structured-agents

@@ -1,0 +1,57 @@
+name: orchestrator
+description: >
+  Top-level agent that receives Jira tickets, classifies the work type,
+  creates an execution plan, delegates to specialist agents, monitors
+  progress, and reports completion back to Jira.
+version: "0.1.0"
+
+capabilities:
+  - task-routing
+  - planning
+  - progress-monitoring
+  - context-management
+
+sub_agents:
+  - planner
+  - coder
+  - reviewer
+  - tester
+  - packager
+  - researcher
+  - git-ops
+  - jira-ops
+  - infra-ops
+
+skills:
+  - jira-ticket-read
+  - repo-discover
+  - ssh-remote-exec
+
+optional_skills:
+  - slack-channel-read          # requires SLACK_BOT_TOKEN
+
+mcps:
+  - jira
+  - gitlab
+
+optional_mcps:
+  - slack                       # requires SLACK_BOT_TOKEN
+
+inputs:
+  jira_ticket:
+    type: string
+    required: true
+    description: Jira ticket URL or ID (e.g. AIPCC-1234 or full URL)
+  additional_context:
+    type: string
+    required: false
+    description: Free-text context to supplement the ticket
+
+outputs:
+  execution_plan: plan.yaml
+  status_report: report.md
+  artifact_manifest: artifacts.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"

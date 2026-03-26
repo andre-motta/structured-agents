@@ -1,0 +1,45 @@
+name: rhai-pipeline
+url: https://gitlab.com/redhat/rhel-ai/rhai/pipeline
+description: >-
+  Red Hat AI customer-facing package index and pipeline — manages Pulp-hosted
+  Python indexes for RHAI products.
+language: yaml
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/rhai/pipeline"
+ci_system: gitlab-ci
+key_files:
+  - .gitlab-ci.yml
+  - collections/*/requirements.txt
+  - collections/*/constraints.txt
+conventions:
+  testing: >-
+    Per-collection requirements.txt and constraints.txt; nightly pipelines validate
+    index and dependency sets against builder outputs.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Consumes builder definitions, images, and wheel metadata for collections.
+  - repo: infrastructure
+    type: depends-on
+    description: Relies on shared CI runners, secrets, and hosting for Pulp and indexes.
+workflows:
+  - name: add package to collection
+    description: Add or bump a Python package in a collection’s requirements/constraints.
+    steps:
+      - Locate the target collection under collections/ and open requirements.txt and constraints.txt.
+      - Add or update pins following existing collection patterns and compatibility notes.
+      - Let GitLab CI (including nightly) validate the change against builder expectations.
+      - Open MR with impact on customer-facing indexes and any rollout notes.
+  - name: update constraints
+    description: Tighten or relax constraint pins for a collection or variant.
+    steps:
+      - Edit collections/*/constraints.txt (and requirements if needed) with clear rationale.
+      - Run or wait for pipeline jobs that resolve and verify the dependency set.
+      - Coordinate with builder or infrastructure if registry or index URLs change.
+  - name: onboard new collection
+    description: Introduce a new collection directory with its own requirements and constraints.
+    steps:
+      - Copy structure from an existing collection (requirements.txt, constraints.txt, CI hooks).
+      - Register the collection in .gitlab-ci.yml or shared includes as required by the pipeline.
+      - Validate end-to-end in CI and document ownership and Pulp/index mapping.

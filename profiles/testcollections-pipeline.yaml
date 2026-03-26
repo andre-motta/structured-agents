@@ -1,0 +1,34 @@
+name: testcollections-pipeline
+url: https://gitlab.com/redhat/rhel-ai/wheels/testcollections/pipeline
+description: >-
+  AIPCC core test collections — validates wheel builds before promoting artifacts
+  to the builder and downstream pipelines.
+language: yaml
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/testcollections/pipeline"
+ci_system: gitlab-ci
+key_files:
+  - .gitlab-ci.yml
+  - collections/*/requirements.txt
+  - collections/*/constraints.txt
+  - builder-image-version.yml
+conventions:
+  testing: >-
+    CI reuses includes from the builder pipeline-api; collections mirror builder-style
+    requirements/constraints for regression coverage.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Test collections exercise wheels and settings produced by the builder repo.
+  - repo: infrastructure
+    type: depends-on
+    description: Shared runners, secrets, and registry access for CI execution.
+workflows:
+  - name: extend test collection
+    description: Add packages or scenarios to a collection to widen pre-promotion coverage.
+    steps:
+      - Edit collections/*/requirements.txt and constraints.txt to match the scenario.
+      - Confirm builder-image-version.yml aligns with the builder release under test.
+      - Run pipeline via MR and inspect failures against builder artifacts.
+      - Document any new failure modes for builder or pipeline owners.

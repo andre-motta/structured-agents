@@ -1,0 +1,63 @@
+name: planner
+description: >
+  Analyzes Jira ticket requirements, explores affected repositories via SSH
+  and repo profiles, breaks work into discrete tasks with dependencies, and
+  produces a structured execution plan.
+version: "0.1.0"
+
+capabilities:
+  - requirement-analysis
+  - task-decomposition
+  - dependency-ordering
+  - repo-exploration
+
+sub_agents: []
+
+skills:
+  - jira-ticket-read
+  - repo-discover
+  - ssh-remote-exec
+
+optional_skills:
+  - slack-channel-read          # requires SLACK_BOT_TOKEN
+
+mcps:
+  - jira
+  - gitlab
+
+inputs:
+  ticket_details:
+    type: object
+    required: true
+    description: Parsed Jira ticket data from orchestrator
+  workflow_type:
+    type: string
+    required: true
+    description: Classification from orchestrator (package-onboarding, feature, bugfix, etc.)
+  known_mr_urls:
+    type: array
+    required: false
+    description: MR URLs already discovered by orchestrator
+
+outputs:
+  execution_plan: plan.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - builder
+  - fromager
+  - wheels-test
+  - package-onboarding
+  - containers
+  - infrastructure
+  - rhai-pipeline
+  - rhaiis-pipeline
+  - rhaiis-containers
+  - testcollections-pipeline
+  - selfservice
+  - rhel-ansible-setup
+  - architecture-decision-records
+  - base-images

@@ -1,0 +1,45 @@
+name: containers
+url: https://gitlab.com/redhat/rhel-ai/containers
+description: >-
+  RHAIIS container image definitions — Containerfiles, Tekton, Renovate.
+language: containerfile
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/containers"
+ci_system: gitlab-ci
+key_files:
+  - Containerfile.*
+  - Makefile
+  - .gitlab-ci.yml
+  - .tekton/
+  - context/
+conventions:
+  testing: >-
+    UBI9 base images; multi-accelerator variants; images published to Quay registry.
+    Tekton definitions under .tekton/ drive build and promote flows.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: May consume builder-produced wheels or metadata in image layers.
+  - repo: rhaiis-containers
+    type: sibling
+    description: Related RHAIIS image lineage; coordinate tag and variant strategy.
+workflows:
+  - name: update base image
+    description: Bump UBI or intermediate base and refresh digests.
+    steps:
+      - Edit Containerfile.* and context/ references; run Renovate or manual bump.
+      - Validate build via Makefile or .gitlab-ci.yml.
+      - Update documentation for consumers and Quay tags.
+  - name: add new accelerator variant
+    description: Add a new GPU or accelerator flavor to the matrix.
+    steps:
+      - Copy nearest variant pattern under Containerfile.* or context/.
+      - Wire CI and Tekton parameters for the new target.
+      - Test build and publish path to Quay.
+  - name: fix build
+    description: Resolve failing image build or CI regression.
+    steps:
+      - Inspect .tekton/ and GitLab CI logs for the failing stage.
+      - Patch Containerfile or context; re-run pipeline.
+      - Confirm Quay manifest or signing steps if applicable.

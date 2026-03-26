@@ -1,0 +1,73 @@
+name: remote-server
+description: Primary development and build server for engineering work
+
+ssh:
+  host: "${SAGENT_SSH_HOST}"
+  user: "${SAGENT_SSH_USER}"
+  port: "${SAGENT_SSH_PORT:-22}"
+  key_path: "${SAGENT_SSH_KEY:-~/.ssh/id_ed25519}"
+  options:
+    ServerAliveInterval: 60
+    ServerAliveCountMax: 3
+    StrictHostKeyChecking: accept-new
+    ConnectTimeout: 10
+
+workspace:
+  base_path: "${SAGENT_WORKSPACE}"
+  repos:
+    builder: "${SAGENT_WORKSPACE}/builder"
+    fromager: "${SAGENT_WORKSPACE}/fromager"
+    wheels-test: "${SAGENT_WORKSPACE}/wheels-test"
+    package-onboarding: "${SAGENT_WORKSPACE}/package-onboarding"
+    containers: "${SAGENT_WORKSPACE}/containers"
+    infrastructure: "${SAGENT_WORKSPACE}/infrastructure"
+    base-images: "${SAGENT_WORKSPACE}/base-images/app"
+    rhai-pipeline: "${SAGENT_WORKSPACE}/rhai/pipeline"
+    rhaiis-pipeline: "${SAGENT_WORKSPACE}/rhaiis/pipeline"
+    rhaiis-containers: "${SAGENT_WORKSPACE}/rhaiis/containers"
+    testcollections-pipeline: "${SAGENT_WORKSPACE}/testcollections/pipeline"
+    selfservice: "${SAGENT_WORKSPACE}/selfservice"
+    rhel-ansible-setup: "${SAGENT_WORKSPACE}/rhel-ansible-setup"
+    architecture-decision-records: "${SAGENT_WORKSPACE}/architecture-decision-records"
+    structured-agents: "${SAGENT_WORKSPACE}/structured-agents"
+
+system:
+  os: RHEL 9.x
+  python: "3.12"
+  key_tools:
+    - git
+    - glab
+    - gh
+    - tox
+    - podman
+    - ansible-playbook
+    - uv
+
+environment_variables:
+  SAGENT_SSH_HOST: "Hostname or IP of the remote server"
+  SAGENT_SSH_USER: "SSH username"
+  SAGENT_SSH_KEY: "Path to SSH private key (default: ~/.ssh/id_ed25519)"
+  SAGENT_SSH_PORT: "SSH port (default: 22)"
+  SAGENT_WORKSPACE: "Base directory where all repos are cloned"
+
+setup_instructions: |
+  1. Copy .env.example to .env and fill in your values:
+     cp .env.example .env
+
+  2. Ensure you have SSH key access to the remote server:
+     ssh-keygen -t ed25519 -C "structured-agents"
+
+  3. Copy the public key to the remote server:
+     ssh-copy-id -i ~/.ssh/id_ed25519.pub ${SAGENT_SSH_USER}@${SAGENT_SSH_HOST}
+
+  4. Test connectivity:
+     ssh ${SAGENT_SSH_HOST} "echo 'Connected'"
+
+  5. Add to ~/.ssh/config for convenience:
+     Host myserver
+       HostName <server-ip-or-hostname>
+       User <your-username>
+       IdentityFile ~/.ssh/id_ed25519
+       ServerAliveInterval 60
+
+  6. The remote server should use key-based auth only (no passwords).

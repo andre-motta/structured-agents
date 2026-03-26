@@ -1,0 +1,56 @@
+name: infra-ops
+description: >
+  Applies infrastructure and container changes across rhel-ansible-setup,
+  base-images, containers (RHAIIS), and related GitLab CI/Tekton configuration.
+  Edits Ansible playbooks, Containerfiles, and pipeline YAML on the remote server,
+  following repo profiles and validating with linting and CI-oriented checks.
+version: "0.1.0"
+
+capabilities:
+  - ansible-provisioning-edits
+  - containerfile-and-build-config
+  - gitlab-ci-and-tekton-pipelines
+  - infra-validation-and-dry-runs
+
+sub_agents: []
+
+skills:
+  - container-modify
+  - ssh-remote-exec
+  - repo-discover
+  - code-write
+
+mcps:
+  - gitlab
+
+inputs:
+  task:
+    type: object
+    required: true
+    description: Task slice from execution plan (id, action, depends_on, inputs)
+  repo:
+    type: string
+    required: true
+    description: Target repository under the remote workspace (e.g. rhel-ansible-setup, containers, base-images)
+  change_description:
+    type: string
+    required: true
+    description: Concrete change intent, constraints, and acceptance criteria for the infra change
+  plan_context:
+    type: object
+    required: false
+    description: Ticket id, branch hints, related MRs, environment assumptions
+
+outputs:
+  changes_diff: changes.diff
+  validation_result: validation.yaml
+
+remote:
+  host: "${SAGENT_SSH_HOST}"
+  workspace: "${SAGENT_WORKSPACE}"
+
+profiles:
+  - rhel-ansible-setup
+  - containers
+  - base-images
+  - rhaiis-containers

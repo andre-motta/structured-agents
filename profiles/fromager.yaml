@@ -1,0 +1,42 @@
+name: fromager
+url: https://github.com/python-wheel-build/fromager
+description: >-
+  CLI tool that rebuilds full Python dependency trees from source into wheels.
+language: python
+platform: github
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/fromager"
+ci_system: github-actions
+key_files:
+  - pyproject.toml
+  - src/fromager/
+  - src/fromager/commands/
+  - docs/
+conventions:
+  testing: >-
+    Hatchling + hatch-vcs; Click CLI; stevedore plugins; resolvelib for resolution.
+    Follow upstream contributing and test docs in docs/.
+relationships:
+  - repo: builder
+    type: upstream
+    description: RHEL AI builder extends and pins fromager for product wheel builds.
+workflows:
+  - name: implement new feature
+    description: Add CLI behavior, hooks, or resolver integration in fromager.
+    steps:
+      - Read src/fromager/commands/ and existing plugin entry points.
+      - Implement with tests alongside upstream patterns.
+      - Run project test suite (see docs/ and pyproject.toml).
+      - Open PR against python-wheel-build/fromager with changelog if required.
+  - name: fix build bug
+    description: Correct wheel build, metadata, or environment handling.
+    steps:
+      - Reproduce with minimal project or fixture.
+      - Patch src/fromager/ and add regression coverage.
+      - Run full CI locally or via GitHub Actions on the branch.
+  - name: add override method
+    description: Extend customization surface for downstream builders (e.g. product overrides).
+    steps:
+      - Align with stevedore plugin contracts used by builder.
+      - Document the extension point in docs/.
+      - Add tests and note compatibility for RHEL AI builder consumers.

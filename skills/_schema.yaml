@@ -1,0 +1,42 @@
+# Skill Definition Schema
+# Each skill directory contains SKILL.md (and optional scripts/)
+#
+# SKILL.md must have YAML frontmatter following this schema:
+
+type: object
+required: [name, description]
+properties:
+  name:
+    type: string
+    description: Unique skill identifier (matches directory name)
+    pattern: "^[a-z][a-z0-9-]*$"
+    maxLength: 64
+
+  description:
+    type: string
+    description: What this skill does and when to use it (third person)
+    maxLength: 1024
+
+  tools:
+    type: array
+    items:
+      type: string
+    description: Tools this skill requires (shell, read, write, search, mcp, ssh)
+
+  mcps:
+    type: array
+    items:
+      type: string
+    description: MCP servers this skill interacts with
+
+  inputs:
+    type: array
+    items:
+      type: string
+    description: Expected input parameters or context
+
+  outputs:
+    type: array
+    items:
+      type: string
+    description: What this skill produces (artifacts, side effects)

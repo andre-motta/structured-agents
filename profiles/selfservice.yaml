@@ -1,0 +1,34 @@
+name: selfservice
+url: https://gitlab.com/redhat/rhel-ai/wheels/selfservice
+description: >-
+  Self-service test pipeline for ad-hoc Python package builds — CLI-driven GitLab
+  pipeline triggers for one-off validation.
+language: python
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/selfservice"
+ci_system: gitlab-ci
+key_files:
+  - selfservice-cli.py
+  - requirements.txt
+  - tox.ini
+  - builder-image-version.yml
+conventions:
+  testing: >-
+    tox for local checks; CLI submits jobs to GitLab CI; Renovate maintains Python
+    and tooling dependencies; builder-image-version pins the wheel build environment.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Ad-hoc builds run against builder images and fromager-style settings.
+  - repo: testcollections-pipeline
+    type: depends-on
+    description: Promotion and regression patterns align with core test collections coverage.
+workflows:
+  - name: trigger ad-hoc build
+    description: Use the CLI to run a package or scenario through the self-service pipeline.
+    steps:
+      - Install deps from requirements.txt and confirm tox passes locally if changing code.
+      - Run selfservice-cli.py with the intended package, ref, and pipeline options.
+      - Monitor GitLab pipeline for the job; capture logs for failures.
+      - If builder-image-version.yml changes, coordinate with builder release cadence.

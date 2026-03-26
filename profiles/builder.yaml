@@ -1,0 +1,55 @@
+name: builder
+url: https://gitlab.com/redhat/rhel-ai/wheels/builder
+description: >-
+  Central wheel-build definition for RHEL AI — fromager settings, overrides, builder
+  images, Containerfiles per variant.
+language: python
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/builder"
+ci_system: gitlab-ci
+key_files:
+  - pyproject.toml
+  - Makefile
+  - overrides/
+  - settings/
+  - pipelines/
+  - bin/
+  - "Containerfile.*"
+conventions:
+  testing: >-
+    Hatch-based Python package (rhel-ai-package-builder-plugins); integrates with the
+    fromager ecosystem for overrides, settings, and wheel builds.
+relationships:
+  - repo: rhai-pipeline
+    type: consumed-by
+    description: Pipeline consumes builder definitions and images.
+  - repo: rhaiis-pipeline
+    type: consumed-by
+    description: RHAIIS pipeline consumes builder outputs and configuration.
+  - repo: testcollections-pipeline
+    type: consumed-by
+    description: Test collections pipeline uses builder-built wheels and metadata.
+  - repo: fromager
+    type: depends-on
+    description: Core CLI and plugin model for rebuilding dependency trees into wheels.
+workflows:
+  - name: update package override
+    description: Change or extend fromager overrides for a specific package or variant.
+    steps:
+      - Identify the package and variant under overrides/ or settings/.
+      - Adjust override modules or YAML to match fromager expectations.
+      - Run local Makefile or CI-equivalent checks.
+      - Open MR with rationale and any pipeline impact notes.
+  - name: add new package to collection
+    description: Register a new Python package in the wheel collection and overrides.
+    steps:
+      - Add settings and overrides following existing package patterns.
+      - Wire the package into the appropriate pipeline or collection manifest.
+      - Validate with builder CI and downstream pipeline dry-runs if available.
+  - name: modify builder image
+    description: Update Containerfile or image metadata for a builder variant.
+    steps:
+      - Edit the relevant Containerfile.* and any context under pipelines/ or bin/.
+      - Rebuild or rely on GitLab CI to validate the image.
+      - Coordinate with consumers (rhai-pipeline, rhaiis-pipeline) if tags change.

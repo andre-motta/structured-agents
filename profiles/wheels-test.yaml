@@ -1,0 +1,44 @@
+name: wheels-test
+url: https://gitlab.com/redhat/rhel-ai/wheels/wheels-test
+description: >-
+  Probe test framework for AI/ML Python packages across architectures.
+language: python
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/wheels-test"
+ci_system: gitlab-ci
+key_files:
+  - pyproject.toml
+  - probe-tests/conftest.py
+  - "probe-tests/test_*.py"
+  - tox.ini
+conventions:
+  testing: >-
+    pytest with markers (torch, vllm, etc.); hardware-adaptive skipping; Ruff linting.
+    Tests assume wheels from the builder pipeline where applicable.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Probe runs target wheels produced by the builder configuration.
+  - repo: testcollections-pipeline
+    type: sibling
+    description: Shares ecosystem with test-collections automation and reporting.
+workflows:
+  - name: add probe tests for new package
+    description: Cover import, smoke, or accelerator-specific behavior for a new wheel.
+    steps:
+      - Add probe-tests/test_<package>.py following existing patterns.
+      - Register markers in conftest.py if new categories are needed.
+      - Run tox or CI-equivalent matrix for relevant architectures.
+  - name: fix failing tests
+    description: Stabilize skips, fixtures, or expectations after wheel or env changes.
+    steps:
+      - Reproduce failure locally or from CI logs.
+      - Adjust markers, skips, or assertions; avoid weakening coverage without cause.
+      - Verify on representative hardware or CI jobs.
+  - name: add new test markers
+    description: Introduce a marker for optional stacks (frameworks, accelerators).
+    steps:
+      - Define marker in conftest.py and document usage in pyproject.toml or docs.
+      - Gate tests with skip conditions for missing hardware or deps.
+      - Update tox/CI to run the right subsets.

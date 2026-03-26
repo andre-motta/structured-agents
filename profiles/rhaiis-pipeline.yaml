@@ -1,0 +1,33 @@
+name: rhaiis-pipeline
+url: https://gitlab.com/redhat/rhel-ai/rhaiis/pipeline
+description: >-
+  RHAIIS wheel and pipeline configuration — dependency sets organized per hardware
+  and OS variant.
+language: yaml
+platform: gitlab
+default_branch: main
+local_path: "${SAGENT_WORKSPACE}/rhaiis/pipeline"
+ci_system: gitlab-ci
+key_files:
+  - collections/*
+  - builder-image-version.yml
+  - renovate.json
+conventions:
+  testing: >-
+    Per-variant requirements and constraints; Renovate keeps dependencies and image
+    references current; align changes with rhaiis-containers image tags where applicable.
+relationships:
+  - repo: builder
+    type: depends-on
+    description: Wheel builds and builder image versions drive pipeline inputs and pins.
+  - repo: rhaiis-containers
+    type: sibling
+    description: Parallel RHAIIS image repo; pipeline and containers evolve together per variant.
+workflows:
+  - name: adjust variant dependency set
+    description: Change requirements or constraints for a hardware/OS variant under collections/.
+    steps:
+      - Identify the variant directory and current requirements/constraints layout.
+      - Apply edits consistent with builder and downstream consumer expectations.
+      - Review Renovate MRs or run CI to confirm resolution and image compatibility.
+      - Open MR linking related rhaiis-containers changes if image tags move.

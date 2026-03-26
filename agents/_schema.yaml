@@ -1,0 +1,90 @@
+# Agent Definition Schema
+# Each agent directory contains agent.yaml + AGENT.md
+#
+# agent.yaml follows this schema:
+
+type: object
+required: [name, description, version]
+properties:
+  name:
+    type: string
+    description: Unique agent identifier (matches directory name)
+    pattern: "^[a-z][a-z0-9-]*$"
+
+  description:
+    type: string
+    description: What this agent does and when to invoke it
+
+  version:
+    type: string
+    description: Semantic version of this agent definition
+    pattern: "^\\d+\\.\\d+\\.\\d+$"
+
+  capabilities:
+    type: array
+    items:
+      type: string
+    description: High-level capabilities this agent provides
+
+  sub_agents:
+    type: array
+    items:
+      type: string
+    description: Agent names this agent can delegate to (must exist in agents/)
+
+  skills:
+    type: array
+    items:
+      type: string
+    description: Skill names this agent can use (must exist in skills/)
+
+  optional_skills:
+    type: array
+    items:
+      type: string
+    description: >
+      Skills available only when their required environment variables are set.
+      Agents must check the relevant env var before invoking these skills.
+
+  mcps:
+    type: array
+    items:
+      type: string
+    description: MCP server names this agent needs (must exist in mcps/)
+
+  optional_mcps:
+    type: array
+    items:
+      type: string
+    description: >
+      MCP servers used only when their credentials are configured.
+      Agents must skip these integrations gracefully when env vars are unset.
+
+  inputs:
+    type: object
+    additionalProperties:
+      type: object
+      properties:
+        type: { type: string, enum: [string, number, boolean, array, object] }
+        required: { type: boolean, default: false }
+        description: { type: string }
+    description: Expected input parameters
+
+  outputs:
+    type: object
+    additionalProperties:
+      type: string
+    description: Named output artifacts (name -> filename)
+
+  remote:
+    type: object
+    properties:
+      host: { type: string, description: "SSH host alias from remote/" }
+      workspace: { type: string, description: "Default working directory on remote" }
+    description: SSH remote execution config
+
+  profiles:
+    type: array
+    items:
+      type: string
+    description: Repo profile names this agent has built-in knowledge of

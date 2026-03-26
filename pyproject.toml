@@ -1,0 +1,62 @@
+[build-system]
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[project]
+name = "structured-agents"
+dynamic = ["version"]
+description = "Hierarchical, directory-based multi-agent system for principal-level engineering automation"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [
+    { name = "André Lustosa" },
+]
+keywords = ["agents", "automation", "ai", "multi-agent", "orchestration"]
+classifiers = [
+    "Development Status :: 2 - Pre-Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "click",
+    "pyyaml",
+    "pydantic",
+    "pydantic-settings",
+    "rich",
+    "paramiko",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+mcp = [
+    "mcp",
+]
+dev = [
+    "pytest",
+    "ruff",
+    "mypy",
+]
+
+[project.scripts]
+structured-agents = "structured_agents.cli:main"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/structured_agents"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
